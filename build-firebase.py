@@ -9,7 +9,7 @@ firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 # Read the JSON file
-with open('./output/data/talktotallkoh/talktotallkoh_messages.json') as json_file:
+with open('./output/data/socfreshmen2324/socfreshmen2324_messages.json') as json_file:
     data = json.load(json_file)
 
 # Extract and store the data in Firestore
