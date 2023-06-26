@@ -16,6 +16,12 @@ from utils import (
 	write_collected_chats
 )
 
+# import firebase submodules
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+import json
+
 '''
 
 Arguments

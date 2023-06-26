@@ -23,21 +23,30 @@ for message in messages:
     channel_id = message.get('peer_id', {}).get('channel_id')
     message_text = message.get('message')
 
-    channel_messages.append({
+    """ channel_messages.append({
         'message_id': message_id,
         'channel_id': channel_id,
         'message_text': message_text
-    })
+    }) """
+    
+    doc_ref = db.collection('news').document()
+    
+    if message_text is not None and message_text != '':
+        doc_ref.set({
+            'channel_id': channel_id,
+            'message_id': message_id,
+            'message_text': message_text
+        })
 
-if channel_messages:
+""" if channel_messages:
     # Create a new document in the Firestore collection
     doc_ref = db.collection('news').document()
     doc_ref.set({
         'channel_id': channel_id,
         'messages': channel_messages
-    })
+    }) """
 
-for chat in chats:
+""" for chat in chats:
     channel_id = chat.get('id')
     channel_name = chat.get('title')
 
@@ -46,4 +55,4 @@ for chat in chats:
     doc_ref.set({
         'channel_id': channel_id,
         'channel_name': channel_name
-    })
+    }) """
