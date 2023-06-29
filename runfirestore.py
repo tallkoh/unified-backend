@@ -323,23 +323,47 @@ for channel in req_input:
 			data = JSONEncoder().encode(data)
 			data = json.loads(data)
 
-			# save data
-			print ('> Writing posts data...')
+			print('> Writing posts data...')
 			file_path = f'{output_folder}/{channel}/{channel}_messages.json'
 			obj = json.dumps(
-				data,
-				ensure_ascii=False,
-				separators=(',',':')
-			)
-			
-			# writer
+                data,
+                ensure_ascii=False,
+                separators=(',', ':')
+            )
+
+            # write data to JSON file
+			with open(file_path, 'w') as json_file:
+				json.dump(data, json_file)
+
+            # read JSON file and extract data
+			with open(file_path) as json_file:
+				data = json.load(json_file)
+
+            # extract and store data in Firestore
+			messages = data.get('messages', [])
+            
+			for message in messages:
+				message_id = message.get('id')
+				channel_id = message.get('peer_id', {}).get('channel_id')
+				message_text = message.get('message')
+                
+				doc_ref = db.collection('news').document()
+                
+				if message_text is not None and message_text != '':
+					doc_ref.set({
+						'channel_id': channel_id,
+						'message_id': message_id,
+						'message_text': message_text
+					})
+
+            # writer
 			writer = open(file_path, mode='w', encoding='utf-8')
 			writer.write(obj)
 			writer.close()
-			print ('> done.')
-			print ('')
-
-		# sleep program for a few seconds
+			print('> done.')
+			print('')
+        
+        # sleep program for a few seconds    
 		if len(req_input) > 1:
 			time.sleep(2)
 	else:
@@ -351,7 +375,6 @@ for channel in req_input:
 		w = open(exceptions_path, encoding='utf-8', mode='a')
 		w.write(f'{channel}\n')
 		w.close()
-
 '''
 
 Clean generated chats text file
