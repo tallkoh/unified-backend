@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 
 # import modules
+import datetime
 import pandas as pd
 import argparse
 import asyncio
 import json
-import time
+import time as t
 import sys
 import os
 
 # import Telegram API submodules
 from api import *
+from datetime import timedelta
 from utils import (
 	get_config_attrs, JSONEncoder, create_dirs, cmd_request_type,
 	write_collected_chats
@@ -85,7 +87,7 @@ if all(i is not None for i in args.values()):
 
 # log results
 text = f'''
-Init program at {time.ctime()}
+Init program at {t.ctime()}
 
 '''
 print (text)
@@ -331,9 +333,9 @@ for channel in req_input:
                 separators=(',', ':')
             )
 
-            # write data to JSON file
+			""" # write data to JSON file
 			with open(file_path, 'w') as json_file:
-				json.dump(data, json_file)
+				json.dump(data, json_file) """
 
             # read JSON file and extract data
 			with open(file_path) as json_file:
@@ -346,10 +348,14 @@ for channel in req_input:
 				message_id = message.get('id')
 				channel_id = message.get('peer_id', {}).get('channel_id')
 				message_text = message.get('message')
+				timestamp = message.get('date')
+				current_date = datetime.datetime.now().date()
+				two_weeks_prior = current_date - timedelta(days=14)
+				message_date = datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S%z").date()
                 
 				doc_ref = db.collection('news').document()
                 
-				if message_text is not None and message_text != '':
+				if message_text is not None and message_text != '' and two_weeks_prior <= message_date <= current_date:
 					doc_ref.set({
 						'channel_id': channel_id,
 						'message_id': message_id,
@@ -422,7 +428,7 @@ df = pd.read_csv(
 )
 
 del counter_df['username']
-df = df.merge(counter_df, how='left', on='id')
+df = df.merge(counter_df, how='left', on='id', suffixes=('_df', '_counter'))
 df.to_csv(
 	f'{output_folder}/collected_chats.csv',
 	index=False,
@@ -432,7 +438,7 @@ df.to_csv(
 
 # log results
 text = f'''
-End program at {time.ctime()}
+End program at {t.ctime()}
 
 '''
 print (text)
