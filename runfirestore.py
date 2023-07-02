@@ -162,15 +162,9 @@ Methods
 '''
 
 # Initialize Firebase Admin SDK
-cred = credentials.Certificate('./the-unifiers-firebase-adminsdk-vzs1p-06f0a83999.json')  # Replace with your actual JSON file path
+cred = credentials.Certificate('./the-unifiers-firebase-adminsdk-vzs1p-06f0a83999.json')
 firebase_admin.initialize_app(cred)
 db = firestore.client()
-
-# save channel data to firestore
-def save_channel_data_to_firestore(channel_data):
-    collection_ref = db.collection('messages')
-    doc_ref = collection_ref.document(channel_data['id'])
-    doc_ref.set(channel_data)
 
 # iterate channels
 for channel in req_input:
@@ -217,21 +211,11 @@ for channel in req_input:
 
 		# save data
 		print ('> Writing channel data...')
-		create_dirs(output_folder, subfolders=channel)
-		file_path = f'{output_folder}/{channel}/{channel}.json'
-		channel_obj = json.dumps(
-			full_channel_data,
-			ensure_ascii=False,
-			separators=(',',':')
-		)
-		writer = open(file_path, mode='w', encoding='utf-8')
-		writer.write(channel_obj)
-		writer.close()
 		print ('> done.')
 		print ('')
 
 		# collect chats
-		chats_path = f'{output_folder}/chats.txt'
+		""" chats_path = f'{output_folder}/chats.txt'
 		chats_file = open(chats_path, mode='a', encoding='utf-8')
 
 		# channel chats
@@ -243,7 +227,7 @@ for channel in req_input:
 			'channel_request',
 			client,
 			output_folder
-		)
+		) """
 
 		if not args['limit_download_to_channel_metadata']:
 
@@ -297,7 +281,7 @@ for channel in req_input:
 					]
 
 					# channel chats in posts
-					counter = write_collected_chats(
+					""" counter = write_collected_chats(
 						tmp['chats'],
 						chats_file,
 						channel,
@@ -305,7 +289,7 @@ for channel in req_input:
 						'from_messages',
 						client,
 						output_folder
-					)
+					) """
 
 					# Adding unique users objects
 					all_users = [i['id'] for i in data['users']]
@@ -325,7 +309,7 @@ for channel in req_input:
 			data = JSONEncoder().encode(data)
 			data = json.loads(data)
 
-			print('> Writing posts data...')
+			""" print('> Writing posts data...')
 			file_path = f'{output_folder}/{channel}/{channel}_messages.json'
 			obj = json.dumps(
                 data,
@@ -333,17 +317,27 @@ for channel in req_input:
                 separators=(',', ':')
             )
 
-			""" # write data to JSON file
+			# write data to JSON file
 			with open(file_path, 'w') as json_file:
-				json.dump(data, json_file) """
+				json.dump(data, json_file)
 
             # read JSON file and extract data
 			with open(file_path) as json_file:
-				data = json.load(json_file)
+				data = json.load(json_file) """
 
             # extract and store data in Firestore
 			messages = data.get('messages', [])
-            
+			chats = data.get('chats', [])
+			for chat in chats:
+				channel_id = chat.get('id')
+				channel_name = chat.get('title')
+
+				# Create a new document in the Firestore collection
+				doc_ref = db.collection('channels').document()
+				doc_ref.set({
+					'channel_id': channel_id,
+					'channel_name': channel_name
+				})
 			for message in messages:
 				message_id = message.get('id')
 				channel_id = message.get('peer_id', {}).get('channel_id')
@@ -359,13 +353,14 @@ for channel in req_input:
 					doc_ref.set({
 						'channel_id': channel_id,
 						'message_id': message_id,
+						'timestamp': datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S%z"),
 						'message_text': message_text
 					})
 
             # writer
-			writer = open(file_path, mode='w', encoding='utf-8')
+			""" writer = open(file_path, mode='w', encoding='utf-8')
 			writer.write(obj)
-			writer.close()
+			writer.close() """
 			print('> done.')
 			print('')
         
@@ -377,10 +372,10 @@ for channel in req_input:
 
 		Channels not found
 		'''
-		exceptions_path = f'{output_folder}/_exceptions-channels-not-found.txt'
+		""" exceptions_path = f'{output_folder}/_exceptions-channels-not-found.txt'
 		w = open(exceptions_path, encoding='utf-8', mode='a')
 		w.write(f'{channel}\n')
-		w.close()
+		w.close() """
 '''
 
 Clean generated chats text file
@@ -388,9 +383,9 @@ Clean generated chats text file
 '''
 
 # close chat file
-chats_file.close()
+# chats_file.close()
 
-# get collected chats
+""" # get collected chats
 collected_chats = list(set([
 	i.rstrip() for i in open(chats_path, mode='r', encoding='utf-8')
 ]))
@@ -398,13 +393,13 @@ collected_chats = list(set([
 # re write collected chats
 chats_file = open(chats_path, mode='w', encoding='utf-8')
 for c in collected_chats:
-	chats_file.write(f'{c}\n')
+	chats_file.write(f'{c}\n') """
 
 # close file
-chats_file.close()
+# chats_file.close()
 
 
-# Process counter
+""" # Process counter
 counter_df = pd.DataFrame.from_dict(
 	counter,
 	orient='index'
@@ -433,7 +428,7 @@ df.to_csv(
 	f'{output_folder}/collected_chats.csv',
 	index=False,
 	encoding='utf-8'
-)
+) """
 
 
 # log results
