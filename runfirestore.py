@@ -60,9 +60,6 @@ parser.add_argument(
 	help='Folder to save collected data. Default: `./output/data`'
 )
 
-
-
-
 '''
 
 Updating data
@@ -197,7 +194,7 @@ for channel in req_input:
 		channel_id = entity_attrs.id
 		entity_attrs_dict = entity_attrs.to_dict()
 
-		# Collect Source -> GetFullChannelRequest
+		""" # Collect Source -> GetFullChannelRequest
 		channel_request = loop.run_until_complete(
 			full_channel_req(client, channel_id)
 		)
@@ -212,22 +209,7 @@ for channel in req_input:
 		# save data
 		print ('> Writing channel data...')
 		print ('> done.')
-		print ('')
-
-		# collect chats
-		""" chats_path = f'{output_folder}/chats.txt'
-		chats_file = open(chats_path, mode='a', encoding='utf-8')
-
-		# channel chats
-		counter = write_collected_chats(
-			full_channel_data['chats'],
-			chats_file,
-			channel,
-			counter,
-			'channel_request',
-			client,
-			output_folder
-		) """
+		print ('') """
 
 		if not args['limit_download_to_channel_metadata']:
 
@@ -280,17 +262,6 @@ for channel in req_input:
 						if i['id'] not in all_chats
 					]
 
-					# channel chats in posts
-					""" counter = write_collected_chats(
-						tmp['chats'],
-						chats_file,
-						channel,
-						counter,
-						'from_messages',
-						client,
-						output_folder
-					) """
-
 					# Adding unique users objects
 					all_users = [i['id'] for i in data['users']]
 					users = [
@@ -309,21 +280,7 @@ for channel in req_input:
 			data = JSONEncoder().encode(data)
 			data = json.loads(data)
 
-			""" print('> Writing posts data...')
-			file_path = f'{output_folder}/{channel}/{channel}_messages.json'
-			obj = json.dumps(
-                data,
-                ensure_ascii=False,
-                separators=(',', ':')
-            )
-
-			# write data to JSON file
-			with open(file_path, 'w') as json_file:
-				json.dump(data, json_file)
-
-            # read JSON file and extract data
-			with open(file_path) as json_file:
-				data = json.load(json_file) """
+			print('> Writing posts data...')
 
             # extract and store data in Firestore
 			messages = data.get('messages', [])
@@ -356,11 +313,6 @@ for channel in req_input:
 						'timestamp': datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S%z"),
 						'message_text': message_text
 					})
-
-            # writer
-			""" writer = open(file_path, mode='w', encoding='utf-8')
-			writer.write(obj)
-			writer.close() """
 			print('> done.')
 			print('')
         
@@ -376,59 +328,6 @@ for channel in req_input:
 		w = open(exceptions_path, encoding='utf-8', mode='a')
 		w.write(f'{channel}\n')
 		w.close() """
-'''
-
-Clean generated chats text file
-
-'''
-
-# close chat file
-# chats_file.close()
-
-""" # get collected chats
-collected_chats = list(set([
-	i.rstrip() for i in open(chats_path, mode='r', encoding='utf-8')
-]))
-
-# re write collected chats
-chats_file = open(chats_path, mode='w', encoding='utf-8')
-for c in collected_chats:
-	chats_file.write(f'{c}\n') """
-
-# close file
-# chats_file.close()
-
-
-""" # Process counter
-counter_df = pd.DataFrame.from_dict(
-	counter,
-	orient='index'
-).reset_index().rename(
-	columns={
-		'index': 'id'
-	}
-)
-
-# save counter
-counter_df.to_csv(
-	f'{output_folder}/counter.csv',
-	encoding='utf-8',
-	index=False
-)
-
-# merge dataframe
-df = pd.read_csv(
-	f'{output_folder}/collected_chats.csv',
-	encoding='utf-8'
-)
-
-del counter_df['username']
-df = df.merge(counter_df, how='left', on='id', suffixes=('_df', '_counter'))
-df.to_csv(
-	f'{output_folder}/collected_chats.csv',
-	index=False,
-	encoding='utf-8'
-) """
 
 
 # log results
