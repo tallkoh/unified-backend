@@ -192,9 +192,10 @@ for channel in req_input:
 
 		# Get Channel ID | convert output to dict
 		channel_id = entity_attrs.id
+		channel_user = entity_attrs.username
 		entity_attrs_dict = entity_attrs.to_dict()
 
-		""" # Collect Source -> GetFullChannelRequest
+		# Collect Source -> GetFullChannelRequest
 		channel_request = loop.run_until_complete(
 			full_channel_req(client, channel_id)
 		)
@@ -208,8 +209,19 @@ for channel in req_input:
 
 		# save data
 		print ('> Writing channel data...')
+		channel_id = full_channel_data['full_chat']['id']
+		channel_name = full_channel_data['chats'][0]['title']
+		channel_username = full_channel_data['chats'][0]['username']
+  
+		doc_ref = db.collection('channels').document()
+		doc_ref.set({
+			'channel_id': channel_id,
+			'channel_name': channel_name,
+			'channel_username': channel_username
+		})
+  
 		print ('> done.')
-		print ('') """
+		print ('')
 
 		if not args['limit_download_to_channel_metadata']:
 
@@ -284,17 +296,7 @@ for channel in req_input:
 
             # extract and store data in Firestore
 			messages = data.get('messages', [])
-			chats = data.get('chats', [])
-			for chat in chats:
-				channel_id = chat.get('id')
-				channel_name = chat.get('title')
 
-				# Create a new document in the Firestore collection
-				doc_ref = db.collection('channels').document()
-				doc_ref.set({
-					'channel_id': channel_id,
-					'channel_name': channel_name
-				})
 			for message in messages:
 				message_id = message.get('id')
 				channel_id = message.get('peer_id', {}).get('channel_id')
@@ -309,6 +311,7 @@ for channel in req_input:
 				if message_text is not None and message_text != '' and two_weeks_prior <= message_date <= current_date:
 					doc_ref.set({
 						'channel_id': channel_id,
+						'channel_name': channel_name,
 						'message_id': message_id,
 						'timestamp': datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S%z"),
 						'message_text': message_text

@@ -38,8 +38,6 @@ class Scraping(Resource):
                 last_message = query.docs[0]
                 last_message_id = last_message.get('message_id')
 
-            # Do something with the last_message_id
-            # ...
 
             return jsonify({'success': True, 'message': 'Channel updated successfully'})
 
