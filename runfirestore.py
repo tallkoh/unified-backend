@@ -312,6 +312,7 @@ for channel in req_input:
 					doc_ref.set({
 						'channel_id': channel_id,
 						'channel_name': channel_name,
+						'channel_username': channel_username,
 						'message_id': message_id,
 						'timestamp': datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S%z"),
 						'message_text': message_text
