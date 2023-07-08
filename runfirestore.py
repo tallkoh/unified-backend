@@ -120,9 +120,17 @@ counter = {}
 '''
 
 # get `client` connection
-client = loop.run_until_complete(
-	get_connection(sfile, api_id, api_hash, phone)
-)
+client = TelegramClient(sfile, api_id, api_hash)
+
+async def run():
+    await client.connect()
+    """await client.send_code_request(phone)
+    code = input('Enter the code you received: ')
+    await client.sign_in(phone, code)
+    
+    print('Client Created') """
+        
+client.loop.run_until_complete(run())
 
 # request type
 req_type, req_input = cmd_request_type(args)
