@@ -70,8 +70,6 @@ parser.add_argument(
 	help='Specifies the offset id. This will update Telegram data with new posts.'
 )
 
-
-
 # parse arguments
 args = vars(parser.parse_args())
 config_attrs = get_config_attrs()
@@ -143,20 +141,6 @@ if req_type == 'batch':
 else:
 	req_input = [req_input]
 
-# reading | Creating an output folder
-if args['output']:
-	output_folder = args['output']
-	if output_folder.endswith('/'):
-		output_folder = output_folder[:-1]
-	else:
-		pass
-else:
-	output_folder = './output/data'
-
-# create dirs
-create_dirs(output_folder)
-
-
 '''
 
 Methods
@@ -215,22 +199,6 @@ for channel in req_input:
 		full_channel_data = JSONEncoder().encode(full_channel_data)
 		full_channel_data = json.loads(full_channel_data)
 
-		# save data
-		print ('> Writing channel data...')
-		channel_id = full_channel_data['full_chat']['id']
-		channel_name = full_channel_data['chats'][0]['title']
-		channel_username = full_channel_data['chats'][0]['username']
-  
-		doc_ref = db.collection('channels').document()
-		doc_ref.set({
-			'channel_id': channel_id,
-			'channel_name': channel_name,
-			'channel_username': channel_username
-		})
-  
-		print ('> done.')
-		print ('')
-
 		if not args['limit_download_to_channel_metadata']:
 
 			# Collect posts
@@ -238,6 +206,22 @@ for channel in req_input:
 				posts = loop.run_until_complete(
 					get_posts(client, channel_id)
 				)
+    
+				# save data
+				print ('> Writing channel data...')
+				channel_id = full_channel_data['full_chat']['id']
+				channel_name = full_channel_data['chats'][0]['title']
+				channel_username = full_channel_data['chats'][0]['username']
+		
+				doc_ref = db.collection('channels').document()
+				doc_ref.set({
+					'channel_id': channel_id,
+					'channel_name': channel_name,
+					'channel_username': channel_username
+				})
+  
+				print ('> done.')
+				print ('')
 
 			else:
 				min_id = args['min_id']
