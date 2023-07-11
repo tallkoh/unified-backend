@@ -151,7 +151,7 @@ Methods
 '''
 
 # Initialize Firebase Admin SDK
-cred = credentials.Certificate('./the-unifiers-firebase-adminsdk-vzs1p-06f0a83999.json')
+cred = credentials.Certificate('./unified-acf08-firebase-adminsdk-xytc6-0f7c8f724e.json')
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
@@ -200,7 +200,10 @@ for channel in req_input:
 		full_channel_data = json.loads(full_channel_data)
 
 		if not args['limit_download_to_channel_metadata']:
-
+			channel_id = full_channel_data['full_chat']['id']
+			channel_name = full_channel_data['chats'][0]['title']
+			channel_username = full_channel_data['chats'][0]['username']
+   
 			# Collect posts
 			if not args['min_id']:
 				posts = loop.run_until_complete(
@@ -209,9 +212,6 @@ for channel in req_input:
     
 				# save data
 				print ('> Writing channel data...')
-				channel_id = full_channel_data['full_chat']['id']
-				channel_name = full_channel_data['chats'][0]['title']
-				channel_username = full_channel_data['chats'][0]['username']
 		
 				doc_ref = db.collection('channels').document()
 				doc_ref.set({
