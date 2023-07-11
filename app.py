@@ -14,7 +14,7 @@ app = Flask(__name__)
 api = Api(app)
 
 # Initialize Firebase Admin SDK
-cred = credentials.Certificate('./the-unifiers-firebase-adminsdk-vzs1p-06f0a83999.json')
+cred = credentials.Certificate('./unified-acf08-firebase-adminsdk-xytc6-0f7c8f724e.json')
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
@@ -27,10 +27,14 @@ async def run_subprocess(channel_username):
     stdout, stderr = await process.communicate()
     
 async def run_subprocess_put(channel_username, min_id):
-    process = await asyncio.create_subprocess_exec(
-        'python', 'runfirestore.py', '--telegram-channel', channel_username, '--min-id', min_id,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
+    print("this is running")
+    try:
+        process = await asyncio.create_subprocess_exec(
+            'python', 'runfirestore.py', '--telegram-channel', channel_username, '--min-id', min_id,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+    except Exception as e:
+        print(e)
 
     stdout, stderr = await process.communicate()
 
@@ -39,8 +43,7 @@ def add_channel(channel_username):
     print("you got here")
     channels_collection = db.collection('channels')
     query = channels_collection.where('channel_username', '==', channel_username).get()
-    print(query)
-    if not query.empty:
+    if len(query) > 0:
         return jsonify({'message':'Channel already exists'}), 400
     
     loop = asyncio.new_event_loop()
@@ -51,23 +54,25 @@ def add_channel(channel_username):
 @app.route('/channels/<channel_username>', methods=['PUT'])
 def update_channel(channel_username):
     try:
-        messages_ref = db.collection('news').where('channel_username', '==', channel_username).order_by('message_id', direction='desc').limit(1)
+        messages_ref = db.collection('news').where('channel_username', '==', channel_username).order_by('message_id', direction=firestore.Query.DESCENDING).limit(1)
         query = messages_ref.get()
-
         last_message_id = None
 
+        for q in query:
+            print(f"{q.id} => {q.to_dict()}")
         # Check if there is a message for the channel
-        if not query.empty:
-            last_message = query.docs[0]
-            last_message_id = last_message.get('message_id')
+        if len(query) > 0:
+            last_message = query[0]
+            last_message_id = str(last_message.get('message_id'))
 
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(run_subprocess(channel_username, last_message_id))
-        return jsonify({'success': True, 'message': 'Channel updated successfully'})
+        loop.run_until_complete(run_subprocess_put(channel_username, last_message_id))
+        return jsonify({'success': True, 'message': 'Channel updated successfully'}), 202
 
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})    
+        print(e)
+        return jsonify({'success': False, 'error': str(e)}), 400    
     
 @app.route('/channels', methods=['GET'])
 def get_scraping(channel_username):
