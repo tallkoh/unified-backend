@@ -54,12 +54,11 @@ def add_channel(channel_username):
 @app.route('/channels/<channel_username>', methods=['PUT'])
 def update_channel(channel_username):
     try:
+        print(channel_username)
         messages_ref = db.collection('news').where('channel_username', '==', channel_username).order_by('message_id', direction=firestore.Query.DESCENDING).limit(1)
         query = messages_ref.get()
         last_message_id = None
 
-        for q in query:
-            print(f"{q.id} => {q.to_dict()}")
         # Check if there is a message for the channel
         if len(query) > 0:
             last_message = query[0]
@@ -72,7 +71,7 @@ def update_channel(channel_username):
 
     except Exception as e:
         print(e)
-        return jsonify({'success': False, 'error': str(e)}), 400    
+        return jsonify({'success': False, 'error': str(e)}), 500    
     
 @app.route('/channels', methods=['GET'])
 def get_scraping(channel_username):
@@ -80,7 +79,26 @@ def get_scraping(channel_username):
     
 @app.route('/channels/<channel_username>', methods=['DELETE'])
 def delete_channel(channel_username):
-    return jsonify({'message': f'Channel with ID {channel_id} deleted successfully'})
-    
+    try:
+        # deleting from channels collection
+        channels_ref = db.collection('channels')
+        channels_query = channels_ref.where('channel_username', '==', channel_username)
+        channels_docs = channels_query.stream()
+        for doc in channels_docs:
+            doc.reference.delete()
+        
+        # deleting from news collection
+        news_ref = db.collection('news')
+        news_query = news_ref.where('channel_username', '==', channel_username)
+        news_docs = news_query.stream()
+        for doc in news_docs:
+            doc.reference.delete()
+            
+        return jsonify({'message': f'Channel {channel_username} deleted successfully'}), 202
+
+    except Exception as e:
+        print(e)
+        return jsonify({'success': False, 'error': str(e)}), 500    
+
 if __name__ == "__main__":
     app.run()
