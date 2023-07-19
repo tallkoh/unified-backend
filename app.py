@@ -44,7 +44,7 @@ def add_channel(channel_username):
     channels_collection = db.collection('channels')
     query = channels_collection.where('channel_username', '==', channel_username).get()
     if len(query) > 0:
-        return jsonify({'message':'Channel already exists'}), 400
+        return jsonify({'message':'Channel already exists'}), 500
     
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
